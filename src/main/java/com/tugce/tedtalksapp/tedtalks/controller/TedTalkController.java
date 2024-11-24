@@ -1,17 +1,12 @@
 package com.tugce.tedtalksapp.tedtalks.controller;
 
-import com.tugce.tedtalksapp.tedtalks.dto.TedTalkDTO;
-import com.tugce.tedtalksapp.tedtalks.model.TedTalkModel;
-import com.tugce.tedtalksapp.tedtalks.service.CsvImporterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.tugce.tedtalksapp.tedtalks.service.TedTalkProcessingService;
 
 @RestController
 @RequestMapping("/api/tedtalks")
@@ -19,32 +14,30 @@ public class TedTalkController {
 
     private static final Logger logger = LoggerFactory.getLogger(TedTalkController.class);
 
-    private final CsvImporterService csvImporterService;
+    private final TedTalkProcessingService processingService;
 
-    public TedTalkController(CsvImporterService csvImporterService) {
-        this.csvImporterService = csvImporterService;
+    public TedTalkController(TedTalkProcessingService processingService) {
+        this.processingService = processingService;
     }
 
+    /**
+     * Endpoint to upload and process a CSV file containing TedTalk data.
+     *
+     * @param file the uploaded CSV file
+     * @return ResponseEntity indicating the success or failure of the operation
+     */
     @PostMapping("/upload")
-    public ResponseEntity<List<TedTalkDTO>> uploadCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadCsv(@RequestParam("file") MultipartFile file) {
         try {
-            List<TedTalkModel> tedTalkModels = csvImporterService.parseCsv(file);
+            // Delegate the processing of the CSV to TedTalkProcessingService
+            processingService.processCsv(file);
 
-            List<TedTalkDTO> tedTalkDTOs = tedTalkModels.stream()
-                    .map(model -> new TedTalkDTO(
-                            model.getTitle(),
-                            model.getAuthor(),
-                            model.getDate().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                            model.getViews(),
-                            model.getLikes(),
-                            model.getLink()
-                    ))
-                    .collect(Collectors.toList());
-
-            return ResponseEntity.ok(tedTalkDTOs);
+            // Return a success response
+            return ResponseEntity.ok("CSV file processed and saved successfully.");
         } catch (Exception e) {
             logger.error("Error processing the CSV file: {}", e.getMessage(), e); // Log at ERROR level
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process and save the CSV file.");
         }
     }
 }

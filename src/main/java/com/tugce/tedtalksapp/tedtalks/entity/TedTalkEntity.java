@@ -1,9 +1,7 @@
 package com.tugce.tedtalksapp.tedtalks.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.tugce.tedtalksapp.tedtalks.converter.YearMonthConverter;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +18,7 @@ public class TedTalkEntity {
 
     private String title;
     private String author;
+    @Convert(converter = YearMonthConverter.class)
     private YearMonth date;
     private long views;
     private long likes;
