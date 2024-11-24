@@ -77,8 +77,11 @@ public class CsvImporterService {
             System.out.println("Number of valid rows parsed: " + tedTalks.size());
             return tedTalks;
 
+        } catch (CsvParseException e) {
+            // Propagate CsvParseException directly
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            // Catch any other unexpected exceptions
             throw new CsvParseException("Error parsing CSV file", e);
         }
     }
