@@ -1,16 +1,18 @@
 package com.tugce.tedtalksapp.tedtalks.dto;
 
-import java.time.YearMonth;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
- * A Data Transfer Object for TED Talks.
+ * A Data Transfer Object (DTO) for TED Talk data.
  */
-public record TedTalkDTO(
-        String title,
-        String author,
-        String date,  // Keeping this as a String to ensure flexibility in formatting
-        long views,
-        long likes,
-        String link
-) {}
-
+@Data
+@AllArgsConstructor
+public class TedTalkDTO {
+    private String title;
+    private String author;
+    private String date; // Keep this as a formatted string like "December 2021"
+    private long views;
+    private long likes;
+    private String link;
+}

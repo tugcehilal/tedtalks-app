@@ -32,12 +32,12 @@ public class TedTalkController {
 
             List<TedTalkDTO> tedTalkDTOs = tedTalkModels.stream()
                     .map(model -> new TedTalkDTO(
-                            model.title(),
-                            model.author(),
-                            model.date().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                            model.views(),
-                            model.likes(),
-                            model.link()
+                            model.getTitle(),
+                            model.getAuthor(),
+                            model.getDate().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                            model.getViews(),
+                            model.getLikes(),
+                            model.getLink()
                     ))
                     .collect(Collectors.toList());
 

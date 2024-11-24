@@ -44,12 +44,12 @@ class CsvImporterServiceTest {
 
         assertEquals(2, tedTalks.size());
         TedTalkModel talk1 = tedTalks.get(0);
-        assertEquals("Talk 1", talk1.title());
-        assertEquals("Author 1", talk1.author());
-        assertEquals(YearMonth.parse("December 2021", YEAR_MONTH_FORMATTER), talk1.date());
-        assertEquals(1300000, talk1.views());
-        assertEquals(19000, talk1.likes());
-        assertEquals("http://example.com/talk1", talk1.link());
+        assertEquals("Talk 1", talk1.getTitle());
+        assertEquals("Author 1", talk1.getAuthor());
+        assertEquals(YearMonth.parse("December 2021", YEAR_MONTH_FORMATTER), talk1.getDate());
+        assertEquals(1300000, talk1.getViews());
+        assertEquals(19000, talk1.getLikes());
+        assertEquals("http://example.com/talk1", talk1.getLink());
     }
 
     @Test
@@ -64,8 +64,8 @@ class CsvImporterServiceTest {
 
         assertEquals(1, tedTalks.size());
         TedTalkModel talk = tedTalks.get(0);
-        assertEquals(0, talk.views()); // Fallback to 0 for invalid views
-        assertEquals(19000, talk.likes());
+        assertEquals(0, talk.getViews()); // Fallback to 0 for invalid views
+        assertEquals(19000, talk.getLikes());
     }
 
     @Test
@@ -82,7 +82,7 @@ class CsvImporterServiceTest {
         TedTalkModel talk = tedTalks.get(0);
 
         // Verify fallback date for invalid date
-        assertEquals(YearMonth.now(), talk.date()); // Invalid "InvalidDate" falls back to current date
+        assertEquals(YearMonth.now(), talk.getDate()); // Invalid "InvalidDate" falls back to current date
     }
 
     @Test
