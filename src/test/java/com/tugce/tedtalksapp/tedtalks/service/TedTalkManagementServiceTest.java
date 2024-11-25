@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -108,5 +109,27 @@ class TedTalkManagementServiceTest {
 
         // Assert
         assertFalse(repository.findById(entity.getId()).isPresent());
+    }
+
+    @Test
+    void testFindMostInfluentialSpeakers_withWeightedLikes() {
+        // Arrange
+        repository.save(new TedTalkEntity(null, "Talk 1", "Author 1", YearMonth.of(2022, 1), 1000, 500, "link1"));
+        repository.save(new TedTalkEntity(null, "Talk 2", "Author 2", YearMonth.of(2022, 2), 2000, 300, "link2"));
+        repository.save(new TedTalkEntity(null, "Talk 3", "Author 1", YearMonth.of(2022, 3), 3000, 200, "link3"));
+
+        // Act
+        List<Map.Entry<String, Long>> influentialSpeakers = service.findMostInfluentialSpeakers();
+
+        // Assert
+        assertEquals(2, influentialSpeakers.size());
+
+        // Author 1 influence: (1000 + 2*500) + (3000 + 2*200) = 1000 + 1000 + 3000 + 400 = 5400
+        assertEquals("Author 1", influentialSpeakers.get(0).getKey());
+        assertEquals(5400, influentialSpeakers.get(0).getValue());
+
+        // Author 2 influence: (2000 + 2*300) = 2000 + 600 = 2600
+        assertEquals("Author 2", influentialSpeakers.get(1).getKey());
+        assertEquals(2600, influentialSpeakers.get(1).getValue());
     }
 }

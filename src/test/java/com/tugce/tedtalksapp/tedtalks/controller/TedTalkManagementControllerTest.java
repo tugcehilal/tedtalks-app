@@ -1,7 +1,5 @@
 package com.tugce.tedtalksapp.tedtalks.controller;
 
-
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tugce.tedtalksapp.tedtalks.dto.TedTalkDTO;
 import com.tugce.tedtalksapp.tedtalks.entity.TedTalkEntity;

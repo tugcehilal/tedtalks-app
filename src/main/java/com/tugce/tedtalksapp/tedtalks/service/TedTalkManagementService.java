@@ -6,10 +6,13 @@ import com.tugce.tedtalksapp.tedtalks.repository.TedTalkRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
 public class TedTalkManagementService {
+    private static final int LIKE_WEIGHT = 2; // Weight of likes in the influence calculation
     private final TedTalkRepository repository;
 
     public TedTalkManagementService(TedTalkRepository repository) {
@@ -54,4 +57,16 @@ public class TedTalkManagementService {
     private TedTalkModel mapEntityToModel(TedTalkEntity entity) {
         return new TedTalkModel(entity.getTitle(), entity.getAuthor(), entity.getDate(), entity.getViews(), entity.getLikes(), entity.getLink());
     }
+
+    public List<Map.Entry<String, Long>> findMostInfluentialSpeakers() {
+        return repository.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        TedTalkEntity::getAuthor, // Group by author
+                        Collectors.summingLong(entity -> entity.getViews() + LIKE_WEIGHT * entity.getLikes()) // Views + LIKE_WEIGHT * Likes
+                ))
+                .entrySet().stream()
+                .sorted((entry1, entry2) -> Long.compare(entry2.getValue(), entry1.getValue())) // Sort descending by influence
+                .toList(); // Return the result as a list
+    }
+
 }
