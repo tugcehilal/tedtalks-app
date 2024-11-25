@@ -1,4 +1,4 @@
-package com.tugce.tedtalksapp.common;
+package com.tugce.tedtalksapp.tedtalks.common;
 
 import com.opencsv.CSVReader;
 import org.springframework.web.multipart.MultipartFile;

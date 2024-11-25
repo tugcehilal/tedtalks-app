@@ -1,97 +1,121 @@
 package com.tugce.tedtalksapp.tedtalks.controller;
 
-import com.tugce.tedtalksapp.tedtalks.exception.CsvParseException;
+import com.tugce.tedtalksapp.tedtalks.repository.TedTalkRepository;
 import com.tugce.tedtalksapp.tedtalks.service.TedTalkProcessingService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TedTalkControllerTest {
 
-    @MockBean
-    private TedTalkProcessingService processingService; // Mock the processing service
+    private final WebApplicationContext webApplicationContext;
+    private final TedTalkRepository repository;
+    private final TedTalkProcessingService processingService;
 
     private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
+
 
     @Autowired
-    public void setMockMvc(TedTalkController tedTalkController) {
-        this.mockMvc = MockMvcBuilders.standaloneSetup(tedTalkController).build();
+    public TedTalkControllerTest(WebApplicationContext webApplicationContext,
+                                 TedTalkRepository repository,
+                                 TedTalkProcessingService processingService) {
+        this.webApplicationContext = webApplicationContext;
+        this.repository = repository;
+        this.processingService = processingService;
+    }
+
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        objectMapper = new ObjectMapper();
+        repository.deleteAll(); // Clear repository before each test
     }
 
     @Test
-    void testUploadCsvSuccess() throws Exception {
+    void testUploadCsv() throws Exception {
+        // Arrange
         String csvContent = """
                 title,author,date,views,likes,link
-                Talk 1,Author 1,December 2021,1300000,19000,http://example.com/talk1
+                Talk 1,Author 1,January 2022,1000,500,http://example.com/talk1
+                Talk 2,Author 2,February 2023,2000,1000,http://example.com/talk2
                 """;
-        MockMultipartFile file = new MockMultipartFile("file", "data.csv", "text/csv", csvContent.getBytes());
 
-        // Mock the processing service to do nothing (successful execution)
-        doNothing().when(processingService).processCsv(file);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "tedtalks.csv",
+                "text/csv",
+                csvContent.getBytes()
+        );
 
-        // Perform the POST request
-        mockMvc.perform(multipart("/api/tedtalks/upload")
-                        .file(file)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
+        // Act & Assert
+        mockMvc.perform(multipart("/api/tedtalks/upload").file(file))
                 .andExpect(status().isOk())
                 .andExpect(content().string("CSV file processed and saved successfully."));
 
-        // Verify interaction with the processing service
-        verify(processingService, times(1)).processCsv(file);
+        // Verify data is saved in the repository
+        assertEquals(2, repository.findAll().size());
     }
 
     @Test
-    void testUploadCsvInvalidFile() throws Exception {
+    void testUploadCsvWithInvalidData() throws Exception {
+        // Arrange
         String csvContent = """
-                incorrectHeader1,incorrectHeader2,date,views,likes,link
-                Talk 1,Author 1,December 2021,1300000,19000,http://example.com/talk1
+                title,author,date,views,likes,link
+                Talk 1,Author 1,InvalidDate,1000,500,http://example.com/talk1
+                Talk 2,Author 2,February 2023,abcd,1000,http://example.com/talk2
                 """;
-        MockMultipartFile file = new MockMultipartFile("file", "data.csv", "text/csv", csvContent.getBytes());
 
-        // Mock the processing service to throw an exception
-        doThrow(new CsvParseException("Invalid CSV headers. Expected: [title, author, date, views, likes, link]"))
-                .when(processingService).processCsv(file);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "tedtalks_invalid.csv",
+                "text/csv",
+                csvContent.getBytes()
+        );
 
-        // Perform the POST request
-        mockMvc.perform(multipart("/api/tedtalks/upload")
-                        .file(file)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Failed to process and save the CSV file."));
+        // Act & Assert
+        mockMvc.perform(multipart("/api/tedtalks/upload").file(file))
+                .andExpect(status().isOk())
+                .andExpect(content().string("CSV file processed and saved successfully."));
 
-        // Verify interaction with the processing service
-        verify(processingService, times(1)).processCsv(file);
+        // Verify fallback data is saved
+        assertEquals(2, repository.findAll().size());
     }
 
     @Test
-    void testUploadCsvEmptyFile() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "data.csv", "text/csv", "".getBytes());
+    void testUploadCsvWithEmptyFile() throws Exception {
+        // Arrange
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "empty.csv",
+                "text/csv",
+                "".getBytes()
+        );
 
-        // Mock the processing service to throw an exception for an empty file
-        doThrow(new CsvParseException("CSV file is empty"))
-                .when(processingService).processCsv(file);
-
-        // Perform the POST request
-        mockMvc.perform(multipart("/api/tedtalks/upload")
-                        .file(file)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
+        // Act & Assert
+        mockMvc.perform(multipart("/api/tedtalks/upload").file(file))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Failed to process and save the CSV file."));
 
-        // Verify interaction with the processing service
-        verify(processingService, times(1)).processCsv(file);
+        // Verify no data is saved
+        assertEquals(0, repository.findAll().size());
     }
 }

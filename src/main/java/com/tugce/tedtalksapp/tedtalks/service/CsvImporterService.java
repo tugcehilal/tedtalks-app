@@ -1,6 +1,7 @@
 package com.tugce.tedtalksapp.tedtalks.service;
 
-import com.tugce.tedtalksapp.common.CsvHelper;
+import com.tugce.tedtalksapp.tedtalks.common.CsvHelper;
+import com.tugce.tedtalksapp.tedtalks.common.DateConversionUtil;
 import com.tugce.tedtalksapp.tedtalks.exception.CsvParseException;
 import com.tugce.tedtalksapp.tedtalks.model.TedTalkModel;
 import org.springframework.stereotype.Service;
@@ -8,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -112,32 +112,6 @@ public class CsvImporterService {
      * @return the parsed YearMonth value, or a fallback value with current month/year
      */
     private YearMonth parseYearMonthWithFallback(String str) {
-        if (str == null || str.isEmpty()) {
-            return YearMonth.now();
-        }
-        String[] parts = str.split(" ");
-        String month = parts.length > 0 ? parts[0] : "";
-        String year = parts.length > 1 ? parts[1] : "";
-
-        int fallbackYear = YearMonth.now().getYear();
-        int fallbackMonth = YearMonth.now().getMonthValue();
-
-        try {
-            if (!month.isEmpty()) {
-                fallbackMonth = YearMonth.parse(month + " " + fallbackYear, YEAR_MONTH_FORMATTER).getMonthValue();
-            }
-        } catch (DateTimeParseException e) {
-            System.out.println("Invalid month value: " + month + ". Defaulting to current month.");
-        }
-
-        try {
-            if (!year.isEmpty()) {
-                fallbackYear = Integer.parseInt(year);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid year value: " + year + ". Defaulting to current year.");
-        }
-
-        return YearMonth.of(fallbackYear, fallbackMonth);
+        return DateConversionUtil.parseYearMonth(str);
     }
 }
