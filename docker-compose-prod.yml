@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    #restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: tedtalks
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - springboot-mysql-network
+  app:
+    image: 'tedtalks-app:latest'
+    build:
+      context: . # Use the current directory as the build context
+    container_name: tedtalks-app
+    #restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/tedtalks
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+    depends_on:
+      - mysql
+    networks:
+      - springboot-mysql-network
+volumes:
+  mysql_data:
+networks:
+  springboot-mysql-network:
+    name: springboot-mysql-network
+    driver: bridge
