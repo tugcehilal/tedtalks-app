@@ -19,11 +19,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class TedTalkControllerTest {
+class TedTalkFileControllerTest {
 
     private final WebApplicationContext webApplicationContext;
     private final TedTalkRepository repository;
@@ -34,9 +31,9 @@ class TedTalkControllerTest {
 
 
     @Autowired
-    public TedTalkControllerTest(WebApplicationContext webApplicationContext,
-                                 TedTalkRepository repository,
-                                 TedTalkProcessingService processingService) {
+    public TedTalkFileControllerTest(WebApplicationContext webApplicationContext,
+                                     TedTalkRepository repository,
+                                     TedTalkProcessingService processingService) {
         this.webApplicationContext = webApplicationContext;
         this.repository = repository;
         this.processingService = processingService;

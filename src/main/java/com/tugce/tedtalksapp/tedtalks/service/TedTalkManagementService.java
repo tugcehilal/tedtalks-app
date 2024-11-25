@@ -5,8 +5,10 @@ import com.tugce.tedtalksapp.tedtalks.model.TedTalkModel;
 import com.tugce.tedtalksapp.tedtalks.repository.TedTalkRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -67,6 +69,16 @@ public class TedTalkManagementService {
                 .entrySet().stream()
                 .sorted((entry1, entry2) -> Long.compare(entry2.getValue(), entry1.getValue())) // Sort descending by influence
                 .toList(); // Return the result as a list
+    }
+
+    public Map<Integer, Optional<TedTalkEntity>> findMostInfluentialTedTalkPerYear() {
+        return repository.findAll().stream()
+                .collect(Collectors.groupingBy(
+                        tedTalk -> tedTalk.getDate().getYear(), // Group by year
+                        Collectors.maxBy(Comparator.comparingLong(
+                                tedTalk -> tedTalk.getViews() + LIKE_WEIGHT * tedTalk.getLikes() // Calculate influence
+                        ))
+                ));
     }
 
 }

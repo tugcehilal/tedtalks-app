@@ -10,13 +10,13 @@ import com.tugce.tedtalksapp.tedtalks.service.TedTalkProcessingService;
 
 @RestController
 @RequestMapping("/api/tedtalks")
-public class TedTalkController {
+public class TedTalkFileController {
 
-    private static final Logger logger = LoggerFactory.getLogger(TedTalkController.class);
+    private static final Logger logger = LoggerFactory.getLogger(TedTalkFileController.class);
 
     private final TedTalkProcessingService processingService;
 
-    public TedTalkController(TedTalkProcessingService processingService) {
+    public TedTalkFileController(TedTalkProcessingService processingService) {
         this.processingService = processingService;
     }
 
